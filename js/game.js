@@ -231,16 +231,23 @@ class BaseballGame {
         this.ctx.fillStyle = 'rgba(135, 206, 235, 0.5)';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // 绘制打击区指示线
-        this.ctx.strokeStyle = '#90EE90';
-        this.ctx.lineWidth = 1;
-        this.ctx.setLineDash([5, 5]);
-        this.ctx.strokeRect(600, 150, 50, 100);
-        this.ctx.setLineDash([]);
-        
         // 绘制投手和打击手
         this.pitcher.draw(this.ctx);
         this.batter.draw(this.ctx);
+        
+        // 绘制打击范围的虚线框（打者身前的球棒可打击范围）
+        // 虚线框：宽度50px，高度是打者身高(50px)的一半(25px)，在打者身前
+        this.ctx.strokeStyle = '#FFD700';  // 金色虚线框
+        this.ctx.lineWidth = 2;
+        this.ctx.setLineDash([8, 5]);  // 虚线样式
+        
+        const strikeBoxX = 680;  // 打者身前的 X 位置
+        const strikeBoxY = 213;  // 打者身体中心向上 12px（身高的1/4）
+        const strikeBoxWidth = 70;  // 虚线框宽度
+        const strikeBoxHeight = 25;  // 虚线框高度（打者身高的一半）
+        
+        this.ctx.strokeRect(strikeBoxX, strikeBoxY, strikeBoxWidth, strikeBoxHeight);
+        this.ctx.setLineDash([]);  // 恢复实线
         
         // 绘制分数提示
         this.drawScoreDisplay();

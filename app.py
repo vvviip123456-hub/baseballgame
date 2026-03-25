@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 
 st.set_page_config(
     page_title="⚾ 棒球小遊戲",
@@ -7,88 +8,134 @@ st.set_page_config(
 )
 
 st.title("⚾ 棒球小遊戲")
-st.write("網頁版棒球遊戲 - 按 SPACE 揮棒，根據時機獲得分數！")
+st.write("按 **SPACE** 鍵揮棒，根據時機獲得分數！")
 
-# 嵌入指向 HTML 版本的連結
-col1, col2, col3 = st.columns([1, 2, 1])
-
-with col2:
-    st.info("🎮 **點擊下方連結開始遊戲**", icon="👇")
-    st.markdown("""
-    ### [🎯 開始遊戲 - 點擊進入](http://localhost:8000)
+# 讀取遊戲檔案
+try:
+    with open('css/style.css', 'r', encoding='utf-8') as f:
+        css_content = f.read()
     
-    或在新標籤頁開啟：http://localhost:8000
-    """)
+    with open('js/pitcher.js', 'r', encoding='utf-8') as f:
+        pitcher_js = f.read()
+    
+    with open('js/batter.js', 'r', encoding='utf-8') as f:
+        batter_js = f.read()
+    
+    with open('js/leaderboard.js', 'r', encoding='utf-8') as f:
+        leaderboard_js = f.read()
+    
+    with open('js/game.js', 'r', encoding='utf-8') as f:
+        game_js = f.read()
+    
+    # 構建完整的 HTML
+    html_content = f"""
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+        {css_content}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="game-info">
+                <div class="info-item">
+                    <span class="label">局數：</span>
+                    <span class="value" id="inning">1</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">第幾球：</span>
+                    <span class="value" id="pitchCount">0/10</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">局得分：</span>
+                    <span class="value" id="currentScore">0</span>
+                </div>
+            </div>
+
+            <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+            <div class="game-instructions">
+                <p><strong>按下 SPACE 鍵揮棒！</strong></p>
+                <p>🎯 根據揮棒時機獲得分數</p>
+                <ul>
+                    <li>⭐⭐⭐ 完美：150分</li>
+                    <li>⭐⭐ 很好：100分</li>
+                    <li>⭐ 良好：50分</li>
+                    <li>未擊中：0分</li>
+                </ul>
+            </div>
+
+            <div id="roundResult" class="round-result hidden">
+                <h2>局結束！</h2>
+                <p>本局得分: <span id="roundScore">0</span></p>
+                <button id="nextRoundBtn">進行下一局</button>
+                <button id="viewLeaderboardBtn">查看排行榜</button>
+            </div>
+        </div>
+
+        <div id="leaderboard" class="leaderboard hidden">
+            <div class="leaderboard-content">
+                <h2>🏆 排行榜</h2>
+                <div class="leaderboard-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>局數</th>
+                                <th>得分</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardTable">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="leaderboard-actions">
+                    <button id="backToGameBtn">返回遊戲</button>
+                    <button id="resetLeaderboardBtn">重置排行榜</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        {pitcher_js}
+        {batter_js}
+        {leaderboard_js}
+        {game_js}
+        </script>
+    </body>
+    </html>
+    """
+    
+    # 嵌入遊戲
+    st.components.v1.html(html_content, height=800, scrolling=False)
+    
+except FileNotFoundError as e:
+    st.error(f"❌ 找不到遊戲文件：{e}")
+    st.write("請確保 css/style.css 和 js/ 目錄中的文件存在")
 
 st.markdown("---")
 
-# 遊戲說明
-st.subheader("📋 遊戲規則")
-
+st.subheader("📋 遊戲說明")
 col1, col2 = st.columns(2)
 
 with col1:
     st.markdown("""
-    #### 🎯 基本玩法
-    - **每局 10 次打擊**
-    - **每 2 秒投 1 球**
-    - **按 SPACE 揮棒**
-    - **根據時機計分**
+    #### 🎯 基本規則
+    - 每局 **10 次打擊**
+    - 每 **2 秒投 1 球**
+    - 按 **SPACE 揮棒**
+    - 根據時機計分
     """)
 
 with col2:
     st.markdown("""
     #### 💯 計分方式
-    - ⭐⭐⭐ 完美：150 分
-    - ⭐⭐ 很好：100 分  
-    - ⭐ 良好：50 分
-    - ❌ 未擊中：0 分
+    - ⭐⭐⭐ 完美（150分）
+    - ⭐⭐ 很好（100分）
+    - ⭐ 良好（50分）
+    - ❌ 未擊中（0分）
     """)
 
-st.markdown("---")
-
-st.subheader("🎪 球種特性")
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.markdown("""
-    #### 🚀 快球
-    - 速度：快
-    - 變化：小
-    - 難度：⭐
-    """)
-
-with col2:
-    st.markdown("""
-    #### 🐢 慢球
-    - 速度：慢
-    - 變化：中
-    - 難度：⭐⭐
-    """)
-
-with col3:
-    st.markdown("""
-    #### 🌀 變化球
-    - 速度：中
-    - 變化：大
-    - 難度：⭐⭐⭐
-    """)
-
-st.markdown("---")
-
-st.subheader("🏆 排行榜")
-st.write("""
-遊戲會自動保存你的每局成績。
-在遊戲中點擊「查看排行榜」可以查看所有紀錄。
-
-**目標分數：1500 分（全滿分）**
-""")
-
-st.markdown("""
----
-<div style="text-align: center; color: #888; font-size: 12px;">
-Made with ❤️ | 棒球小遊戲
-</div>
-""", unsafe_allow_html=True)
 

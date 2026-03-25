@@ -21,29 +21,28 @@ class Pitcher {
         
         let speed, curve, initialY; 
         
-        // 打击区范围：y 在 150-250 之间
-        // 投球的初始高度应该在打击区范围内或附近
-        const strikeZoneTop = 150;
-        const strikeZoneBottom = 250;
-        const strikeZoneCenter = (strikeZoneTop + strikeZoneBottom) / 2;  // 200
+        // 打击区范围（虚线框范围）：y 在 213-238 之间
+        // 这是打者身前的虚线框区域（打者身高的一半）
+        const strikeZoneTop = 213;
+        const strikeZoneBottom = 238;
+        const strikeZoneCenter = (strikeZoneTop + strikeZoneBottom) / 2;  // 225.5
         
         // 根据投球类型设置速度和变化量
-        // 确保球总是从打击区附近投出，即使有变化也能被打到
         switch(pitchType) {
-            case 'fastball':  // 快球 - 速度快，变化小
+            case 'fastball':  // 快球 - 速度快，变化小，最容易打
                 speed = 8 + Math.random() * 2;  // 速度 8-10
-                curve = Math.random() * 15 - 7.5;  // 变化 -7.5 到 7.5（减小变化）
-                initialY = strikeZoneCenter + (Math.random() * 20 - 10);  // 在 190-210 范围内
+                curve = Math.random() * 8 - 4;  // 变化 -4 到 4（极小变化）
+                initialY = strikeZoneCenter + (Math.random() * 10 - 5);  // 在虚线框内
                 break;
-            case 'slowball':  // 慢球 - 速度慢，变化中等
+            case 'slowball':  // 慢球 - 速度慢，变化中等，需要耐心
                 speed = 3 + Math.random() * 2;  // 速度 3-5
-                curve = Math.random() * 25 - 12.5;  // 变化 -12.5 到 12.5（减小变化）
-                initialY = strikeZoneCenter + (Math.random() * 30 - 15);  // 在 185-215 范围内
+                curve = Math.random() * 12 - 6;  // 变化 -6 到 6
+                initialY = strikeZoneCenter + (Math.random() * 15 - 7.5);  // 在虚线框上下各 7.5px
                 break;
-            case 'curveball':  // 变化球 - 速度中等，变化较大但可控
+            case 'curveball':  // 变化球 - 速度中等，变化自然，最难打
                 speed = 5 + Math.random() * 2;  // 速度 5-7
-                curve = Math.random() * 35 - 17.5;  // 变化 -17.5 到 17.5（控制在合理范围）
-                initialY = strikeZoneCenter + (Math.random() * 40 - 20);  // 在 180-220 范围内
+                curve = Math.random() * 14 - 7;  // 变化 -7 到 7（自然的弧度）
+                initialY = strikeZoneCenter + (Math.random() * 20 - 10);  // 在虚线框上下各 10px
                 break;
         }
 
@@ -69,27 +68,46 @@ class Pitcher {
         // 球向右运动
         this.ball.x += this.ball.vx;
         
-        // 应用变化
-        this.ball.vy += this.ball.curve * 0.01;
+        // 应用变化（在接近打者时减弱变化，防止球跑出范围）
+        if (this.ball.x < 600) {
+            // 前半段：正常变化
+            this.ball.vy += this.ball.curve * 0.01;
+        } else {
+            // 后半段（在打击区附近）：减弱变化，确保球在虚线框范围内
+            this.ball.vy += this.ball.curve * 0.004;
+        }
+        
         this.ball.y += this.ball.vy;
 
-        // 确保球在打者范围内：当球接近打者（x > 600）时，强制限制y在打击区范围内
-        if (this.ball.x > 600) {
-            const strikeZoneTop = 150;
-            const strikeZoneBottom = 250;
+        // 确保球不会离开虚线框范围上下边界
+        // 虚线框范围：Y 在 213-238 之间（打者身高的一半，25px）
+        // 但允许稍大范围（205-245），防止在飞行中被强制限制
+        const minY = 205;
+        const maxY = 245;
+        
+        if (this.ball.y < minY) {
+            this.ball.y = minY;
+            this.ball.vy *= -0.2;  // 反弹效果很弱
+        }
+        if (this.ball.y > maxY) {
+            this.ball.y = maxY;
+            this.ball.vy *= -0.2;  // 反弹效果很弱
+        }
+
+        // 当球到达打击点（x > 680）时，确保球在虚线框范围内
+        if (this.ball.x > 680 && this.ball.x < 750) {
+            const strikeZoneTop = 213;
+            const strikeZoneBottom = 238;
             
-            // 如果球超出范围，将其拉回范围内
             if (this.ball.y < strikeZoneTop) {
                 this.ball.y = strikeZoneTop;
-                this.ball.vy *= -0.5;  // 反弹效果
             }
             if (this.ball.y > strikeZoneBottom) {
                 this.ball.y = strikeZoneBottom;
-                this.ball.vy *= -0.5;  // 反弹效果
             }
         }
 
-        // 球离开画面判定
+        // 球离开画面判定（球超过场景右边界）
         if (this.ball.x > 850) {
             this.ball = null;
         }
