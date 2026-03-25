@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>棒球小遊戲</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚾ 棒球小遊戲</h1>
+        </header>
+
+        <div class="game-wrapper">
+            <!-- 遊戲狀態顯示 -->
+            <div class="game-info">
+                <div class="info-item">
+                    <span class="label">局數：</span>
+                    <span class="value" id="inning">1</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">第幾球：</span>
+                    <span class="value" id="pitchCount">1/10</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">局得分：</span>
+                    <span class="value" id="currentScore">0</span>
+                </div>
+            </div>
+
+            <!-- 遊戲畫面 -->
+            <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+            <!-- 遊戲說明 -->
+            <div class="game-instructions">
+                <p><strong>按下 SPACE 鍵揮棒！</strong></p>
+                <p>🎯 根據揮棒時機獲得分數</p>
+                <ul>
+                    <li>⭐⭐⭐ 完美：150分</li>
+                    <li>⭐⭐ 很好：100分</li>
+                    <li>⭐ 良好：50分</li>
+                    <li>未擊中：0分</li>
+                </ul>
+            </div>
+
+            <!-- 局結果 -->
+            <div id="roundResult" class="round-result hidden">
+                <h2>局結束！</h2>
+                <p>本局得分: <span id="roundScore">0</span></p>
+                <button id="nextRoundBtn">進行下一局</button>
+                <button id="viewLeaderboardBtn">查看排行榜</button>
+            </div>
+        </div>
+
+        <!-- 排行榜 -->
+        <div id="leaderboard" class="leaderboard hidden">
+            <div class="leaderboard-content">
+                <h2>🏆 排行榜</h2>
+                <div class="leaderboard-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>局數</th>
+                                <th>得分</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardTable">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="leaderboard-actions">
+                    <button id="backToGameBtn">返回遊戲</button>
+                    <button id="resetLeaderboardBtn">重置排行榜</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 節奏條 -->
+        <div id="rhythmBar" class="rhythm-bar hidden">
+            <div class="rhythm-label">揮棒時機</div>
+            <div class="rhythm-track">
+                <div id="rhythmIndicator" class="rhythm-indicator"></div>
+                <div id="rhythmZone" class="rhythm-zone"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/pitcher.js"></script>
+    <script src="js/batter.js"></script>
+    <script src="js/leaderboard.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
